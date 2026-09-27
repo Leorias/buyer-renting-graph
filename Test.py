@@ -6,7 +6,7 @@ import streamlit as st
 # 1. Wide layout gives desktop full space, while custom CSS bounds maximum width
 st.set_page_config(page_title="Dynamic Home Buying Model", layout="wide")
 
-# Custom Responsive CSS for Mobile, Tablet, and Desktop
+# Custom Responsive CSS with Dark/Light Mode Theme Support
 st.markdown(
     """
     <style>
@@ -17,12 +17,17 @@ st.markdown(
         padding-bottom: 3rem !important;
     }
 
-    /* Card styling for metric cards */
+    /* Card styling for metric cards using Streamlit theme variables */
     [data-testid="stMetric"] {
-        background-color: #f8f9fa;
+        background-color: var(--secondary-background-color);
         padding: 0.8rem 1rem;
         border-radius: 8px;
-        border: 1px solid #e9ecef;
+        border: 1px solid rgba(128, 128, 128, 0.2);
+    }
+
+    /* Force metric labels and values to respect current text color theme */
+    [data-testid="stMetricLabel"], [data-testid="stMetricValue"] {
+        color: var(--text-color) !important;
     }
 
     /* Mobile adjustments (< 768px) */
@@ -250,7 +255,7 @@ fig.add_trace(
         hovertemplate="<b>%{y:,.2f} €</b><br>Month %{x} (Year %{customdata})<extra>Buyer Rent/Debt</extra>",
         mode="lines",
         name="Buyer Payed Rent / Debt",
-        line=dict(color="#D32F2F", width=1.5, dash="dot"),
+        line=dict(color="#E53935", width=1.5, dash="dot"),
     )
 )
 fig.add_trace(
@@ -306,13 +311,12 @@ if house_purchased:
         x=purchase_month,
         line_width=1.5,
         line_dash="dash",
-        line_color="red",
+        line_color="#E53935",
         annotation_text=f" House Purchased (Mo {purchase_month} / Yr {round(purchase_month/12, 1)})",
         annotation_position="top left",
     )
 
 # --- RESPONSIVE DUAL X-AXIS CONFIGURATION ---
-# Generate tick values spaced out by years (every 12 or 24 months depending on total horizon)
 tick_step = 12 if time_horizon_years <= 15 else 24
 tick_months = np.arange(0, months + 1, tick_step)
 tick_labels = [f"Yr {m//12}<br><sub>Mo {m}</sub>" for m in tick_months]
@@ -327,15 +331,15 @@ fig.update_layout(
         tickmode="array",
         tickvals=tick_months,
         ticktext=tick_labels,
-        gridcolor="#f0f0f0",
+        showgrid=True,
     ),
     yaxis=dict(
         title="Value (€)",
         tickformat=",.2f",
-        gridcolor="#f0f0f0",
+        showgrid=True,
     ),
     hovermode="x unified",
-    template="plotly_white",
+    template="plotly",  # Adapt automatically to system/Streamlit light/dark background
     legend=dict(
         orientation="h",
         yanchor="top",
