@@ -3,7 +3,30 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
-st.set_page_config(page_title="Dynamic Home Buying Model", layout="wide")
+# 1. Use 'centered' layout so charts scale down automatically on mobile
+st.set_page_config(page_title="Dynamic Home Buying Model", layout="centered")
+
+# Inject Custom Mobile CSS for better padding and responsive metrics
+st.markdown(
+    """
+    <style>
+    /* Adjust overall padding for mobile devices */
+    @media (max-width: 768px) {
+        .block-container {
+            padding-top: 1.5rem !important;
+            padding-left: 0.8rem !important;
+            padding-right: 0.8rem !important;
+        }
+        /* Make metric text slightly smaller on small screens */
+        [data-testid="stMetricValue"] {
+            font-size: 1.4rem !important;
+        }
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 st.title("🏡 Dynamic Home Purchase & Wealth Tracker")
 
 # --- SIDEBAR INPUTS ---
@@ -176,15 +199,6 @@ df = pd.DataFrame(
 
 fig = go.Figure()
 
-fig.add_trace(
-    go.Scatter(
-        x=df["Month"],
-        y=df["Year"],
-        mode="lines",
-        name="Year",
-        line=dict(color="#FFFFFF", width=1),
-    )
-)
 # Add Buyer Traces
 fig.add_trace(
     go.Scatter(
@@ -195,6 +209,7 @@ fig.add_trace(
         line=dict(color="#1E88E5", width=3),
     )
 )
+
 if include_house_in_portfolio:
     fig.add_trace(
         go.Scatter(
@@ -265,12 +280,21 @@ if house_purchased:
         annotation_position="top left",
     )
 
+# Optimize Plotly layout for mobile screens
 fig.update_layout(
     title="Wealth Accumulation & Real Estate Progression",
     xaxis_title="Months",
     yaxis_title="Value (€)",
     hovermode="x unified",
     template="plotly_white",
+    legend=dict(
+        orientation="h",
+        yanchor="bottom",
+        y=-0.5,
+        xanchor="center",
+        x=0.5
+    ),
+    margin=dict(l=10, r=10, t=40, b=40),
 )
 fig.update_yaxes(tickformat=",.2f")
 
