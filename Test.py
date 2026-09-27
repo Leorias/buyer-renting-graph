@@ -3,23 +3,37 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
-# 1. Use 'centered' layout so charts scale down automatically on mobile
-st.set_page_config(page_title="Dynamic Home Buying Model", layout="centered")
+# 1. Wide layout gives desktop full space, while custom CSS bounds maximum width
+st.set_page_config(page_title="Dynamic Home Buying Model", layout="wide")
 
-# Inject Custom Mobile CSS for better padding and responsive metrics
+# Custom Responsive CSS for Mobile, Tablet, and Desktop
 st.markdown(
     """
     <style>
-    /* Adjust overall padding for mobile devices */
+    /* Center and constrain main content container for large desktops */
+    .block-container {
+        max-width: 1250px !important;
+        padding-top: 2rem !important;
+        padding-bottom: 3rem !important;
+    }
+
+    /* Card styling for metric cards */
+    [data-testid="stMetric"] {
+        background-color: #f8f9fa;
+        padding: 0.8rem 1rem;
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+    }
+
+    /* Mobile adjustments (< 768px) */
     @media (max-width: 768px) {
         .block-container {
-            padding-top: 1.5rem !important;
+            padding-top: 1rem !important;
             padding-left: 0.8rem !important;
             padding-right: 0.8rem !important;
         }
-        /* Make metric text slightly smaller on small screens */
         [data-testid="stMetricValue"] {
-            font-size: 1.4rem !important;
+            font-size: 1.3rem !important;
         }
     }
     </style>
@@ -182,11 +196,14 @@ with col3:
         delta=f"{'Buyer ahead' if diff >= 0 else 'Renter ahead'}",
     )
 
-# --- PLOTTING ---
+# --- DATA PREPARATION ---
+months_arr = np.arange(months + 1)
+years_arr = np.round(months_arr / 12, 1)
+
 df = pd.DataFrame(
     {
-        "Month": np.arange(months + 1),
-        "Year": np.arange(months + 1) / 12,
+        "Month": months_arr,
+        "Year": years_arr,
         "Buyer Portfolio": buyer_portfolio_val,
         "Buyer House Value": buyer_house_val,
         "Buyer Payed Rent": buyer_rent_val,
@@ -199,20 +216,13 @@ df = pd.DataFrame(
 
 fig = go.Figure()
 
-fig.add_trace(
-    go.Scatter(
-        x=df["Month"],
-        y=df["Year"],
-        mode="lines",
-        name="Year",
-        line=dict(color="#FFFFFF", width=1),
-    )
-)
 # Add Buyer Traces
 fig.add_trace(
     go.Scatter(
         x=df["Month"],
         y=df["Buyer Portfolio"],
+        customdata=df["Year"],
+        hovertemplate="<b>%{y:,.2f} €</b><br>Month %{x} (Year %{customdata})<extra>Buyer Portfolio</extra>",
         mode="lines",
         name="Buyer Total Portfolio",
         line=dict(color="#1E88E5", width=3),
@@ -224,6 +234,8 @@ if include_house_in_portfolio:
         go.Scatter(
             x=df["Month"],
             y=df["Buyer House Value"],
+            customdata=df["Year"],
+            hovertemplate="<b>%{y:,.2f} €</b><br>Month %{x} (Year %{customdata})<extra>House Value</extra>",
             mode="lines",
             name="House Market Value",
             line=dict(color="#4CAF50", width=2, dash="dash"),
@@ -234,6 +246,8 @@ fig.add_trace(
     go.Scatter(
         x=df["Month"],
         y=df["Buyer Payed Rent"],
+        customdata=df["Year"],
+        hovertemplate="<b>%{y:,.2f} €</b><br>Month %{x} (Year %{customdata})<extra>Buyer Rent/Debt</extra>",
         mode="lines",
         name="Buyer Payed Rent / Debt",
         line=dict(color="#D32F2F", width=1.5, dash="dot"),
@@ -243,6 +257,8 @@ fig.add_trace(
     go.Scatter(
         x=df["Month"],
         y=df["Buyer Winnings"],
+        customdata=df["Year"],
+        hovertemplate="<b>%{y:,.2f} €</b><br>Month %{x} (Year %{customdata})<extra>Buyer Winnings</extra>",
         mode="lines",
         name="Buyer Winnings",
         line=dict(color="#FBC02D", width=2.5),
@@ -254,6 +270,8 @@ fig.add_trace(
     go.Scatter(
         x=df["Month"],
         y=df["Renter Portfolio"],
+        customdata=df["Year"],
+        hovertemplate="<b>%{y:,.2f} €</b><br>Month %{x} (Year %{customdata})<extra>Renter Portfolio</extra>",
         mode="lines",
         name="Renter Portfolio",
         line=dict(color="#8E24AA", width=3),
@@ -263,6 +281,8 @@ fig.add_trace(
     go.Scatter(
         x=df["Month"],
         y=df["Renter Payed Rent"],
+        customdata=df["Year"],
+        hovertemplate="<b>%{y:,.2f} €</b><br>Month %{x} (Year %{customdata})<extra>Renter Rent</extra>",
         mode="lines",
         name="Renter Payed Rent",
         line=dict(color="#BA68C8", width=1.5, dash="dot"),
@@ -272,6 +292,8 @@ fig.add_trace(
     go.Scatter(
         x=df["Month"],
         y=df["Renter Winnings"],
+        customdata=df["Year"],
+        hovertemplate="<b>%{y:,.2f} €</b><br>Month %{x} (Year %{customdata})<extra>Renter Winnings</extra>",
         mode="lines",
         name="Renter Winnings",
         line=dict(color="#FFA500", width=2.5),
@@ -285,26 +307,44 @@ if house_purchased:
         line_width=1.5,
         line_dash="dash",
         line_color="red",
-        annotation_text=f" House Purchased (Mo {purchase_month})",
+        annotation_text=f" House Purchased (Mo {purchase_month} / Yr {round(purchase_month/12, 1)})",
         annotation_position="top left",
     )
 
-# Optimize Plotly layout for mobile screens
+# --- RESPONSIVE DUAL X-AXIS CONFIGURATION ---
+# Generate tick values spaced out by years (every 12 or 24 months depending on total horizon)
+tick_step = 12 if time_horizon_years <= 15 else 24
+tick_months = np.arange(0, months + 1, tick_step)
+tick_labels = [f"Yr {m//12}<br><sub>Mo {m}</sub>" for m in tick_months]
+
 fig.update_layout(
-    title="Wealth Accumulation & Real Estate Progression",
-    xaxis_title="Months",
-    yaxis_title="Value (€)",
+    title=dict(
+        text="Wealth Accumulation & Real Estate Progression",
+        font=dict(size=18),
+    ),
+    xaxis=dict(
+        title="Time (Years & Months)",
+        tickmode="array",
+        tickvals=tick_months,
+        ticktext=tick_labels,
+        gridcolor="#f0f0f0",
+    ),
+    yaxis=dict(
+        title="Value (€)",
+        tickformat=",.2f",
+        gridcolor="#f0f0f0",
+    ),
     hovermode="x unified",
     template="plotly_white",
     legend=dict(
         orientation="h",
-        yanchor="bottom",
-        y=-0.5,
+        yanchor="top",
+        y=-0.2,
         xanchor="center",
-        x=0.5
+        x=0.5,
     ),
-    margin=dict(l=10, r=10, t=40, b=40),
+    margin=dict(l=20, r=20, t=50, b=100),
+    height=550,
 )
-fig.update_yaxes(tickformat=",.2f")
 
 st.plotly_chart(fig, use_container_width=True)
