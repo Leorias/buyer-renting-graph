@@ -199,6 +199,15 @@ df = pd.DataFrame(
 
 fig = go.Figure()
 
+fig.add_trace(
+    go.Scatter(
+        x=df["Month"],
+        y=df["Year"],
+        mode="lines",
+        name="Year",
+        line=dict(color="#FFFFFF", width=1),
+    )
+)
 # Add Buyer Traces
 fig.add_trace(
     go.Scatter(
