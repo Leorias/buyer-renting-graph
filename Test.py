@@ -230,7 +230,7 @@ fig.add_trace(
         hovertemplate="<b>%{y:,.2f} €</b><br>Month %{x} (Year %{customdata})<extra>Buyer Portfolio</extra>",
         mode="lines",
         name="Buyer Total Portfolio",
-        line=dict(color="#1E88E5", width=3),
+        line=dict(color="#FFE659", width=3, dash="solid"),
     )
 )
 
@@ -243,7 +243,7 @@ if include_house_in_portfolio:
             hovertemplate="<b>%{y:,.2f} €</b><br>Month %{x} (Year %{customdata})<extra>House Value</extra>",
             mode="lines",
             name="House Market Value",
-            line=dict(color="#4CAF50", width=2, dash="dash"),
+            line=dict(color="#4CAF50", width=2, dash="dashdot"),
         )
     )
 
@@ -255,7 +255,7 @@ fig.add_trace(
         hovertemplate="<b>%{y:,.2f} €</b><br>Month %{x} (Year %{customdata})<extra>Buyer Rent/Debt</extra>",
         mode="lines",
         name="Buyer Payed Rent / Debt",
-        line=dict(color="#E53935", width=1.5, dash="dot"),
+        line=dict(color="#A38B00", width=1.5, dash="dot"),
     )
 )
 fig.add_trace(
@@ -266,7 +266,7 @@ fig.add_trace(
         hovertemplate="<b>%{y:,.2f} €</b><br>Month %{x} (Year %{customdata})<extra>Buyer Winnings</extra>",
         mode="lines",
         name="Buyer Winnings",
-        line=dict(color="#FBC02D", width=2.5),
+        line=dict(color="#FFE02E", width=2.5, dash="dash"),
     )
 )
 
@@ -279,7 +279,7 @@ fig.add_trace(
         hovertemplate="<b>%{y:,.2f} €</b><br>Month %{x} (Year %{customdata})<extra>Renter Portfolio</extra>",
         mode="lines",
         name="Renter Portfolio",
-        line=dict(color="#8E24AA", width=3),
+        line=dict(color="#59CAFF", width=3, dash="solid"),
     )
 )
 fig.add_trace(
@@ -290,7 +290,7 @@ fig.add_trace(
         hovertemplate="<b>%{y:,.2f} €</b><br>Month %{x} (Year %{customdata})<extra>Renter Rent</extra>",
         mode="lines",
         name="Renter Payed Rent",
-        line=dict(color="#BA68C8", width=1.5, dash="dot"),
+        line=dict(color="#008FD1", width=1.5, dash="dot"),
     )
 )
 fig.add_trace(
@@ -301,7 +301,7 @@ fig.add_trace(
         hovertemplate="<b>%{y:,.2f} €</b><br>Month %{x} (Year %{customdata})<extra>Renter Winnings</extra>",
         mode="lines",
         name="Renter Winnings",
-        line=dict(color="#FFA500", width=2.5),
+        line=dict(color="#2EBDFF", width=2.5, dash="dash"),
     )
 )
 
